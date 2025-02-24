@@ -1,0 +1,29 @@
+{
+  "name": "simulador-datafono",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:staging": "next dev -p 2002",
+    "dev:prod": "next dev -p 2011",
+    "build": "next build",
+    "start:staging": "next start -p 2002",
+    "start:prod": "next start -p 2011",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:wifi-saga": "bash test_wifi_saga.sh"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest",
+    "jest": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest"
+  }
+}
