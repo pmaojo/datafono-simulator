@@ -81,3 +81,18 @@ export const STATUS = {
 } as const;
 
 export const TRANSACTION_RESPONSE_STATUS_OK = 0; 
+
+// New constants
+export const HEADER_X_SOURCE = 'X-SOURCE';
+export const SOURCE_COMERCIA = 'COMERCIA';
+export const DEVICE_TYPE_WIFI = 'WIFI';
+export const DEVICE_TYPE_CABLE = 'CABLE';
+export const CURRENCY_EUR = 'EUR';
+
+export const RESULT_CODES = {
+  EMV_INITIALIZATION_ERROR: 1010,
+  SERVICE_BUSY: 1001,
+  INITIALIZATION_SUCCESSFUL: 1000,
+  MSG_FORMAT_ERROR: 2,
+  // ... other result codes can be mapped here if needed
+} as const;
