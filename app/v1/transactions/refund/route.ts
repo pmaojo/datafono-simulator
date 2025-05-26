@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getTransactionStore } from '../store';
-import { RESPONSE_ERROR, STATUS } from '../constants';
+import { RESPONSE_ERROR, STATUS, DEVICE_TYPE_WIFI, RESULT_CODES, CURRENCY_EUR, HEADER_X_SOURCE, SOURCE_COMERCIA } from '../constants';
 import { Transaction } from '../types';
 import { generateId } from '../utils/idUtils';
 
 export async function POST(request: Request) {
-  if (request.headers.get('X-SOURCE') !== 'COMERCIA') {
+  if (request.headers.get(HEADER_X_SOURCE) !== SOURCE_COMERCIA) {
     return NextResponse.json({
-      resultCode: 1010,
-      resultMessage: RESPONSE_ERROR['1010']
+      resultCode: RESULT_CODES.EMV_INITIALIZATION_ERROR,
+      resultMessage: RESPONSE_ERROR[RESULT_CODES.EMV_INITIALIZATION_ERROR.toString()]
     });
   }
 
@@ -17,8 +17,8 @@ export async function POST(request: Request) {
     
     if (!body.transactionId || !body.amount || !body.orderId) {
       return NextResponse.json({
-        resultCode: 2,
-        resultMessage: RESPONSE_ERROR['2']
+        resultCode: RESULT_CODES.MSG_FORMAT_ERROR,
+        resultMessage: RESPONSE_ERROR[RESULT_CODES.MSG_FORMAT_ERROR.toString()]
       });
     }
 
@@ -28,13 +28,14 @@ export async function POST(request: Request) {
     const tx: Transaction = {
       id: generateId(),
       amount: body.amount,
-      currency: "EUR",
+      currency: CURRENCY_EUR,
       status: STATUS.PENDING,
       orderId: body.orderId,
       transactionId: body.transactionId,
-      resultCode: 1001,
-      resultMessage: RESPONSE_ERROR['1001'],
-      timestamp: new Date().toISOString()
+      resultCode: RESULT_CODES.SERVICE_BUSY,
+      resultMessage: RESPONSE_ERROR[RESULT_CODES.SERVICE_BUSY.toString()],
+      timestamp: new Date().toISOString(),
+      deviceType: DEVICE_TYPE_WIFI, // Added
     };
 
     store.addTransaction(tx);
@@ -42,19 +43,19 @@ export async function POST(request: Request) {
     // Procesar en background
     setTimeout(() => {
       if (Math.random() < 0.9) {
-        store.updateTransaction(tx.id, {
+        store.updateTransaction(tx.id!, { // Assuming tx.id will be defined
           status: STATUS.APPROVED,
-          resultCode: 0,
-          resultMessage: "Reembolso aprobado",
+          resultCode: RESULT_CODES.SUCCESS,
+          resultMessage: RESPONSE_ERROR[RESULT_CODES.SUCCESS.toString()], // "Reembolso aprobado" could be a specific message
           authCode: Math.floor(Math.random() * 1000000).toString().padStart(6, '0')
         });
       } else {
-        store.updateTransaction(tx.id, {
+        store.updateTransaction(tx.id!, { // Assuming tx.id will be defined
           status: STATUS.DECLINED,
-          resultCode: 950,
-          resultMessage: RESPONSE_ERROR['950'],
-          errorCode: '950',
-          errorMessage: RESPONSE_ERROR['950']
+          resultCode: RESULT_CODES.REFUND_OPERATION_NOT_ALLOWED,
+          resultMessage: RESPONSE_ERROR[RESULT_CODES.REFUND_OPERATION_NOT_ALLOWED.toString()],
+          errorCode: RESULT_CODES.REFUND_OPERATION_NOT_ALLOWED.toString(),
+          errorMessage: RESPONSE_ERROR[RESULT_CODES.REFUND_OPERATION_NOT_ALLOWED.toString()]
         });
       }
     }, Math.random() * 2000);
@@ -63,8 +64,8 @@ export async function POST(request: Request) {
 
   } catch (error) {
     return NextResponse.json({
-      resultCode: 2,
-      resultMessage: RESPONSE_ERROR['2']
+      resultCode: RESULT_CODES.MSG_FORMAT_ERROR,
+      resultMessage: RESPONSE_ERROR[RESULT_CODES.MSG_FORMAT_ERROR.toString()]
     });
   }
 } 
