@@ -1,61 +1,63 @@
 import { NextResponse } from 'next/server';
-import { RESPONSE_ERROR, STATUS } from '../constants';
+import { RESPONSE_ERROR, STATUS, HEADER_X_SOURCE, SOURCE_COMERCIA, RESULT_CODES } from '../constants';
 import { getTransactionStore } from '../store';
 import type { PaymentRequest, Transaction, TransactionResponse } from '../types';
+import { generateId } from '../utils/idUtils';
+import { getProcessingTime } from '../utils/processingUtils';
 
-function generateId() {
-  return `TX${Math.floor(Math.random() * 1000000)}`;
-}
-
-function getProcessingTime(deviceType: string): number {
-  return deviceType === 'WIFI' ?
-    Math.random() * 4000 + 2000 : // WIFI: 2-6 seconds
-    Math.random() * 2000 + 1000;  // CABLE: 1-3 seconds
-}
-
-export async function POST(request: Request) {
-  if (request.headers.get('X-SOURCE') !== 'COMERCIA') {
+function validatePaymentRequest(request: Request, body: PaymentRequest | null): NextResponse | null {
+  if (request.headers.get(HEADER_X_SOURCE) !== SOURCE_COMERCIA) {
     return NextResponse.json({
-      resultCode: 1010,
-      resultMessage: RESPONSE_ERROR['1010']
+      resultCode: RESULT_CODES.EMV_INITIALIZATION_ERROR,
+      resultMessage: RESPONSE_ERROR[RESULT_CODES.EMV_INITIALIZATION_ERROR.toString()]
     });
   }
 
+  // Basic body validation, ensuring it's not null and has essential fields
+  if (!body || body.amount == null || !body.orderId) { // Check for null amount explicitly
+    return NextResponse.json({
+      resultCode: RESULT_CODES.MSG_FORMAT_ERROR,
+      resultMessage: RESPONSE_ERROR[RESULT_CODES.MSG_FORMAT_ERROR.toString()]
+    });
+  }
+  return null;
+}
+
+export async function POST(request: Request) {
   try {
     const body = await request.json() as PaymentRequest;
 
-    if (!body.amount || !body.orderId) {
-      return NextResponse.json({
-        resultCode: 2,
-        resultMessage: RESPONSE_ERROR['2']
-      });
+    const validationError = validatePaymentRequest(request, body);
+    if (validationError) {
+      return validationError;
     }
 
     const store = getTransactionStore();
-    const deviceType = body.deviceType || 'WIFI';
-    const processingTime = getProcessingTime(deviceType);
+    // const deviceType = body.deviceType || 'WIFI'; // Moved to createTransactionObject
+    // const processingTime = getProcessingTime(deviceType); // Moved to createTransactionObject
 
-    const tx: Transaction = {
-      id: generateId(),
-      amount: body.amount,
-      currency: "EUR",
-      status: STATUS.PENDING,
-      orderId: body.orderId,
-      resultCode: 1001,
-      resultMessage: RESPONSE_ERROR['1001'],
-      timestamp: new Date().toISOString(),
-      tokenization: body.tokenization,
-      deviceType: deviceType,
-      processingTime: processingTime,
-      processingEndTime: new Date(Date.now() + processingTime).toISOString()
-    };
+    // const tx: Transaction = { // Logic moved to createTransactionObject
+    //   id: generateId(),
+    //   amount: body.amount,
+    //   currency: "EUR",
+    //   status: STATUS.PENDING,
+    //   orderId: body.orderId,
+    //   resultCode: 1001,
+    //   resultMessage: RESPONSE_ERROR['1001'],
+    //   timestamp: new Date().toISOString(),
+    //   tokenization: body.tokenization,
+    //   deviceType: deviceType,
+    //   processingTime: processingTime,
+    //   processingEndTime: new Date(Date.now() + processingTime).toISOString()
+    // };
+    const tx = createTransactionObject(body); // Use the new service function
 
     store.addTransaction(tx);
 
     const response: TransactionResponse = {
-      orderId: body.orderId,
-      resultCode: 1001,
-      resultMessage: RESPONSE_ERROR['1001'],
+      orderId: body.orderId, // Should this be tx.orderId? Assuming body.orderId is fine for now.
+      resultCode: tx.resultCode, // Use resultCode from tx object
+      resultMessage: tx.resultMessage, // Use resultMessage from tx object
       deviceType: tx.deviceType
     };
 
@@ -63,8 +65,8 @@ export async function POST(request: Request) {
 
   } catch (error) {
     return NextResponse.json({
-      resultCode: 2,
-      resultMessage: RESPONSE_ERROR['2']
+      resultCode: RESULT_CODES.MSG_FORMAT_ERROR,
+      resultMessage: RESPONSE_ERROR[RESULT_CODES.MSG_FORMAT_ERROR.toString()]
     });
   }
 } 

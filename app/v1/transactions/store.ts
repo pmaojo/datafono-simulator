@@ -1,34 +1,25 @@
-import fs from 'fs';
-import path from 'path';
+// import fs from 'fs'; // No longer used directly
+// import path from 'path'; // No longer used directly
 import { Transaction } from './types';
+import { PersistenceService } from './services/persistenceService'; // Adjust path as needed
 
-const STORE_FILE = path.join(process.cwd(), 'transaction-store.json');
+// const STORE_FILE = path.join(process.cwd(), 'transaction-store.json'); // Moved to PersistenceService
 
 class TransactionStore {
   private transactions: Map<string, Transaction> = new Map();
+  private persistenceService: PersistenceService;
 
-  constructor() {
-    this.loadFromDisk();
+  constructor(persistenceService: PersistenceService) {
+    this.persistenceService = persistenceService;
+    this.loadInitialTransactions();
   }
 
-  private loadFromDisk() {
-    try {
-      if (fs.existsSync(STORE_FILE)) {
-        const data = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
-        this.transactions = new Map(Object.entries(data));
-      }
-    } catch (error) {
-      console.error('Error loading transaction store:', error);
-    }
+  private loadInitialTransactions() {
+    this.transactions = this.persistenceService.loadTransactions();
   }
 
-  private saveToDisk() {
-    try {
-      const data = Object.fromEntries(this.transactions);
-      fs.writeFileSync(STORE_FILE, JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error('Error saving transaction store:', error);
-    }
+  private saveAllTransactions() {
+    this.persistenceService.saveTransactions(this.transactions);
   }
 
   addTransaction(tx: Transaction) {
@@ -36,7 +27,7 @@ class TransactionStore {
       throw new Error('Transaction must have an orderId');
     }
     this.transactions.set(tx.orderId, tx);
-    this.saveToDisk();
+    this.saveAllTransactions(); // Use the new save method
   }
 
   getTransaction(orderId: string): Transaction | undefined {
@@ -66,7 +57,7 @@ class TransactionStore {
     const tx = this.transactions.get(orderId);
     if (tx) {
       this.transactions.set(orderId, { ...tx, ...updates });
-      this.saveToDisk();
+      this.saveAllTransactions(); // Use the new save method
     }
   }
 
@@ -82,8 +73,9 @@ class TransactionStore {
 }
 
 // Singleton instance
-const store = new TransactionStore();
+const persistenceService = new PersistenceService(); // Or however it's best to create/get it
+const store = new TransactionStore(persistenceService);
 
 export function getTransactionStore() {
   return store;
-} 
+}
