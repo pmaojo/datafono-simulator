@@ -58,8 +58,9 @@ export async function POST(request: Request) {
     const response: TransactionResponse = {
       orderId: tx.orderId!, // Added non-null assertion operator
       resultCode: tx.resultCode, // Use resultCode from tx object
-      resultMessage: tx.resultMessage, // Use resultMessage from tx object
-      deviceType: tx.deviceType
+      resultMessage: tx.resultMessage!, // Added non-null assertion operator
+      deviceType: tx.deviceType,
+      tokenization: tx.tokenization, // Added line
     };
 
     return NextResponse.json(response);
