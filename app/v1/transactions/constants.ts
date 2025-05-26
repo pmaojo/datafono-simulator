@@ -90,9 +90,13 @@ export const DEVICE_TYPE_CABLE = 'CABLE';
 export const CURRENCY_EUR = 'EUR';
 
 export const RESULT_CODES = {
+  SUCCESS: 0,
   EMV_INITIALIZATION_ERROR: 1010,
   SERVICE_BUSY: 1001,
   INITIALIZATION_SUCCESSFUL: 1000,
   MSG_FORMAT_ERROR: 2,
+  TRANSACTION_NOT_FOUND: 602,
+  INVALID_PARAMS_ERROR: 4, // Corresponds to "MSG_PARAMS_ERROR" in RESPONSE_ERROR
+  REFUND_OPERATION_NOT_ALLOWED: 950, // Corresponds to "Refund Operation not allowed" in RESPONSE_ERROR
   // ... other result codes can be mapped here if needed
 } as const;

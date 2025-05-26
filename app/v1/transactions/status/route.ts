@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { RESPONSE_ERROR, STATUS } from '../constants';
+import { RESPONSE_ERROR, STATUS, RESULT_CODES, HEADER_X_SOURCE, SOURCE_COMERCIA } from '../constants';
 import { getTransactionStore } from '../store';
 
 interface StatusRequest {
@@ -7,10 +7,10 @@ interface StatusRequest {
 }
 
 export async function POST(request: Request) {
-    if (request.headers.get('X-SOURCE') !== 'COMERCIA') {
+    if (request.headers.get(HEADER_X_SOURCE) !== SOURCE_COMERCIA) {
         return NextResponse.json({
-            resultCode: 1010,
-            resultMessage: RESPONSE_ERROR['1010']
+            resultCode: RESULT_CODES.EMV_INITIALIZATION_ERROR,
+            resultMessage: RESPONSE_ERROR[RESULT_CODES.EMV_INITIALIZATION_ERROR.toString()]
         });
     }
 
@@ -20,16 +20,16 @@ export async function POST(request: Request) {
 
         if (!body.orderId) {
             return NextResponse.json({
-                resultCode: 2,
-                resultMessage: RESPONSE_ERROR['2']
+                resultCode: RESULT_CODES.MSG_FORMAT_ERROR,
+                resultMessage: RESPONSE_ERROR[RESULT_CODES.MSG_FORMAT_ERROR.toString()]
             });
         }
 
         const tx = store.getTransaction(body.orderId);
         if (!tx) {
             return NextResponse.json({
-                resultCode: 602,
-                resultMessage: RESPONSE_ERROR['602']
+                resultCode: RESULT_CODES.TRANSACTION_NOT_FOUND,
+                resultMessage: RESPONSE_ERROR[RESULT_CODES.TRANSACTION_NOT_FOUND.toString()]
             });
         }
 
@@ -55,8 +55,8 @@ export async function POST(request: Request) {
                 const updatedTx = {
                     ...tx,
                     status: STATUS.APPROVED,
-                    resultCode: 0,
-                    resultMessage: "Success",
+                    resultCode: RESULT_CODES.SUCCESS,
+                    resultMessage: RESPONSE_ERROR[RESULT_CODES.SUCCESS.toString()],
                     authCode: Math.floor(Math.random() * 1000000).toString().padStart(6, '0')
                 };
                 store.updateTransaction(tx.orderId!, updatedTx);
@@ -70,8 +70,8 @@ export async function POST(request: Request) {
                 const updatedTx = {
                     ...tx,
                     status: STATUS.DECLINED,
-                    resultCode: 950,
-                    resultMessage: RESPONSE_ERROR['950']
+                    resultCode: RESULT_CODES.REFUND_OPERATION_NOT_ALLOWED, // Assuming 950 is for refund declined, or a general decline
+                    resultMessage: RESPONSE_ERROR[RESULT_CODES.REFUND_OPERATION_NOT_ALLOWED.toString()]
                 };
                 store.updateTransaction(tx.orderId!, updatedTx);
                 return NextResponse.json({
@@ -86,16 +86,16 @@ export async function POST(request: Request) {
         // Si aún no ha pasado el tiempo de procesamiento, devolvemos estado ocupado
         return NextResponse.json({
             orderId: tx.orderId,
-            resultCode: 1001,
-            resultMessage: RESPONSE_ERROR['1001'],
+            resultCode: RESULT_CODES.SERVICE_BUSY,
+            resultMessage: RESPONSE_ERROR[RESULT_CODES.SERVICE_BUSY.toString()],
             deviceType: tx.deviceType
         });
 
     } catch (error) {
         console.error('Error processing status request:', error);
         return NextResponse.json({
-            resultCode: 2,
-            resultMessage: RESPONSE_ERROR['2']
+            resultCode: RESULT_CODES.MSG_FORMAT_ERROR,
+            resultMessage: RESPONSE_ERROR[RESULT_CODES.MSG_FORMAT_ERROR.toString()]
         });
     }
 } 
