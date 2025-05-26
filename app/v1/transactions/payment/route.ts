@@ -56,10 +56,11 @@ export async function POST(request: Request) {
     store.addTransaction(tx);
 
     const response: TransactionResponse = {
-      orderId: tx.orderId, // Changed from body.orderId to tx.orderId
+      orderId: tx.orderId!, // Added non-null assertion operator
       resultCode: tx.resultCode, // Use resultCode from tx object
-      resultMessage: tx.resultMessage, // Use resultMessage from tx object
-      deviceType: tx.deviceType
+      resultMessage: tx.resultMessage!, // Added non-null assertion operator
+      deviceType: tx.deviceType,
+      tokenization: tx.tokenization, // Added line
     };
 
     return NextResponse.json(response);
