@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { RESPONSE_ERROR, STATUS, HEADER_X_SOURCE, SOURCE_COMERCIA, RESULT_CODES } from '../constants';
 import { getTransactionStore } from '../store';
 import type { PaymentRequest, Transaction, TransactionResponse } from '../types';
-import { generateId } from '../utils/idUtils';
-import { getProcessingTime } from '../utils/processingUtils';
+// import { generateId } from '../utils/idUtils'; // No longer directly used here
+// import { getProcessingTime } from '../utils/processingUtils'; // No longer directly used here
+import { createTransactionObject } from '../services/transactionService'; // Added import
 
 function validatePaymentRequest(request: Request, body: PaymentRequest | null): NextResponse | null {
   if (request.headers.get(HEADER_X_SOURCE) !== SOURCE_COMERCIA) {
@@ -55,7 +56,7 @@ export async function POST(request: Request) {
     store.addTransaction(tx);
 
     const response: TransactionResponse = {
-      orderId: body.orderId, // Should this be tx.orderId? Assuming body.orderId is fine for now.
+      orderId: tx.orderId, // Changed from body.orderId to tx.orderId
       resultCode: tx.resultCode, // Use resultCode from tx object
       resultMessage: tx.resultMessage, // Use resultMessage from tx object
       deviceType: tx.deviceType
