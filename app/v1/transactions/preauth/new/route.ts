@@ -1,17 +1,9 @@
 import { NextResponse } from 'next/server';
-import { RESPONSE_ERROR, STATUS } from '../../../constants';
-import { getTransactionStore } from '../../../store';
-import type { PaymentRequest, Transaction } from '../../../types';
-
-function generateId() {
-    return `TX${Math.floor(Math.random() * 1000000)}`;
-}
-
-function getProcessingTime(deviceType: string): number {
-    return deviceType === 'WIFI' ?
-        Math.random() * 4000 + 2000 : // WIFI: 2-6 segundos
-        Math.random() * 2000 + 1000;  // CABLE: 1-3 segundos
-}
+import { RESPONSE_ERROR, STATUS } from '../../constants';
+import { getTransactionStore } from '../../store';
+import type { PaymentRequest, Transaction } from '../../types';
+import { generateId } from '../../utils/idUtils';
+import { getProcessingTime } from '../../utils/processingUtils';
 
 export async function POST(request: Request) {
     if (request.headers.get('X-SOURCE') !== 'COMERCIA') {

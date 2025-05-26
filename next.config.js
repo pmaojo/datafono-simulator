@@ -13,15 +13,8 @@ const nextConfig = {
       },
     ];
   },
-  // Forzar HTTP
-  experimental: {
-    allowMiddlewareResponseBody: true,
-  },
-  // Deshabilitar SSL
-  server: {
-    https: false,
-    http: true
-  }
+  // experimental object was here, now removed as it's empty
+  // server object was here, now removed
 };
 
 module.exports = nextConfig;
