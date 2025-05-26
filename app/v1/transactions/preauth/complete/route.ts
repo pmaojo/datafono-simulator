@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { RESPONSE_ERROR, STATUS } from '../../../constants';
-import { getTransactionStore } from '../../../store';
-import type { Transaction } from '../../../types';
+import { RESPONSE_ERROR, STATUS } from '../../constants';
+import { getTransactionStore } from '../../store';
+import type { Transaction } from '../../types';
 
 interface CompleteRequest {
     orderId: string;

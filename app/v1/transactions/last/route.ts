@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { RESPONSE_ERROR } from '../../constants';
-import { getTransactionStore } from '../../store';
+import { RESPONSE_ERROR } from '../constants';
+import { getTransactionStore } from '../store';
 
 export async function GET(request: Request) {
     if (request.headers.get('X-SOURCE') !== 'COMERCIA') {

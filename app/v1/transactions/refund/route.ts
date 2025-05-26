@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getTransactionStore } from '../store';
 import { RESPONSE_ERROR, STATUS } from '../constants';
 import { Transaction } from '../types';
+import { generateId } from '../utils/idUtils';
 
 export async function POST(request: Request) {
   if (request.headers.get('X-SOURCE') !== 'COMERCIA') {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     
     // Crear transacción de reembolso
     const tx: Transaction = {
-      id: `TX${Math.floor(Math.random() * 1000000)}`,
+      id: generateId(),
       amount: body.amount,
       currency: "EUR",
       status: STATUS.PENDING,
