@@ -58,7 +58,7 @@ El Simulador de Datáfono es una herramienta de desarrollo que emula el comporta
 1. Clona el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/simulador-datafono.git
+git clone https://github.com/pmaojo/simulador-datafono.git
 ```
 
 2. Instala las dependencias
@@ -143,8 +143,6 @@ Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
 
 ## 📫 Contacto
 
-Tu Nombre - [@tu_twitter](https://twitter.com/tu_twitter) - email@example.com
 
-Link del Proyecto: [https://github.com/tu-usuario/simulador-datafono](https://github.com/tu-usuario/simulador-datafono)
-
+Link del Proyecto: https://github.com/pmaojo/simulador-datafono
 ---
