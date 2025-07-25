@@ -5,7 +5,7 @@ import { PersistenceService } from './services/persistenceService'; // Adjust pa
 
 // const STORE_FILE = path.join(process.cwd(), 'transaction-store.json'); // Moved to PersistenceService
 
-class TransactionStore {
+export class TransactionStore {
   private transactions: Map<string, Transaction> = new Map();
   private persistenceService: PersistenceService;
 

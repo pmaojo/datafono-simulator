@@ -1,4 +1,4 @@
-import { createTransactionObject } from '../../../app/v1/transactions/services/transactionService'; // Adjust path
+import { createTransactionObject, Clock } from '../../../app/v1/transactions/services/transactionService';
 import { generateId } from '../../../app/v1/transactions/utils/idUtils';
 import { getProcessingTime } from '../../../app/v1/transactions/utils/processingUtils';
 import { PaymentRequest, Transaction } from '../../../app/v1/transactions/types'; // Adjust path
@@ -13,6 +13,7 @@ describe('transactionService', () => {
     const mockGeneratedId = 'TX123456';
     const mockProcessingTimeWifi = 3000; // Example time for WIFI
     const mockProcessingTimeCable = 1500; // Example time for CABLE
+    let mockClock: Clock;
 
     beforeEach(() => {
       // Reset mocks for each test
@@ -20,8 +21,7 @@ describe('transactionService', () => {
       (getProcessingTime as jest.Mock).mockImplementation((deviceType: string) => {
         return deviceType === DEVICE_TYPE_WIFI ? mockProcessingTimeWifi : mockProcessingTimeCable;
       });
-      // Mock Date.now() for predictable timestamps and processingEndTime
-      jest.spyOn(Date, 'now').mockReturnValue(new Date('2023-01-01T12:00:00.000Z').getTime());
+      mockClock = { now: () => new Date('2023-01-01T12:00:00.000Z').getTime() };
     });
 
     afterEach(() => {
@@ -34,7 +34,7 @@ describe('transactionService', () => {
     };
 
     it('should create a transaction object with minimal valid input and default WIFI deviceType', () => {
-      const transaction = createTransactionObject(minimalBody);
+      const transaction = createTransactionObject(minimalBody, mockClock);
 
       expect(generateId).toHaveBeenCalled();
       expect(getProcessingTime).toHaveBeenCalledWith(DEVICE_TYPE_WIFI); // Default deviceType
@@ -60,7 +60,7 @@ describe('transactionService', () => {
         ...minimalBody,
         deviceType: 'CABLE', // Explicitly CABLE
       };
-      const transaction = createTransactionObject(bodyWithCable);
+      const transaction = createTransactionObject(bodyWithCable, mockClock);
 
       expect(getProcessingTime).toHaveBeenCalledWith('CABLE');
       expect(transaction.deviceType).toBe('CABLE');
@@ -77,20 +77,20 @@ describe('transactionService', () => {
           customerId: 'CUST123',
         },
       };
-      const transaction = createTransactionObject(bodyWithTokenization);
+      const transaction = createTransactionObject(bodyWithTokenization, mockClock);
 
       expect(transaction.tokenization).toEqual(bodyWithTokenization.tokenization);
     });
 
     it('should correctly calculate processingEndTime', () => {
       // Relies on Date.now() mock and getProcessingTime mock
-      const transaction = createTransactionObject(minimalBody);
+      const transaction = createTransactionObject(minimalBody, mockClock);
       const expectedEndTime = new Date(new Date('2023-01-01T12:00:00.000Z').getTime() + mockProcessingTimeWifi);
       expect(transaction.processingEndTime).toBe(expectedEndTime.toISOString());
     });
 
     it('should have all required fields in the returned transaction object', () => {
-      const transaction = createTransactionObject(minimalBody);
+      const transaction = createTransactionObject(minimalBody, mockClock);
       expect(transaction.id).toBeDefined();
       expect(transaction.amount).toBeDefined();
       expect(transaction.currency).toBeDefined();
