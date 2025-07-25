@@ -81,7 +81,7 @@ npm run dev
 El proyecto incluye un script de prueba para simular transacciones:
 
 ```bash
-./test_payment_v2.sh
+./test_regular_saga.sh
 ```
 
 ### Ejemplo de Integración
