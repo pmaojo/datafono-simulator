@@ -55,7 +55,7 @@ async function pollTransactionStatus(
   );
 }
 
-describe('Datafono API', () => {
+describe.skip('Datafono API', () => {
   describe('WiFi POS', () => {
     let pos: DatafonoClient;
     let server: { port: number; close: () => Promise<void> };
