@@ -13,7 +13,7 @@
     "test:wifi-saga": "bash test_wifi_saga.sh"
   },
   "dependencies": {
-    "next": "latest",
+    "next": "15.5.8",
     "react": "latest",
     "react-dom": "latest"
   },
